@@ -24,11 +24,12 @@ namespace NHLTeamsLib
         private const string HOMEPAGE = "https://www.hockey-reference.com/";
 
         private string Homepage = DownloadString(HOMEPAGE);
-        private string filePath = "NHLTeams.txt";
+        private const string filePath = "NHLTeams.txt";
 
         private NHLTeam[] allTeams = new NHLTeam[NUMBER_OF_TEAMS];
+        private NHLTeam[,] matchupList = new NHLTeam[NUMBER_OF_TEAMS, 2];
 
-        public NHLTeam[] AllTeams { get => allTeams; set => allTeams = value; }
+        public NHLTeam[] AllTeams { get => allTeams; }
 
         #endregion
 
@@ -44,8 +45,9 @@ namespace NHLTeamsLib
                 using (Stream stream = File.Open(filePath, FileMode.Open))
                 {
                     var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    AllTeams = (NHLTeam[])binaryFormatter.Deserialize(stream);
+                    allTeams = (NHLTeam[])binaryFormatter.Deserialize(stream);
                 }
+                PopulateMatchups();
             }
             catch (Exception)
             {
@@ -88,6 +90,7 @@ namespace NHLTeamsLib
         {
             PopulateNamesAndAbbreviations();
             PopulateTeamData(YEAR);
+            PopulateMatchups();
 
             using (Stream stream = File.Open(filePath, false ? FileMode.Append : FileMode.Create))
             {
@@ -138,5 +141,53 @@ namespace NHLTeamsLib
         #endregion
 
         #endregion
+
+        #region Populate Matchups
+
+        /// <summary>
+        /// Populates the MatchupList with team[0] being the chosen team, and team[1] being their next opponent.
+        /// </summary>
+        private void PopulateMatchups()
+        {
+            for (int i = 0; i < NUMBER_OF_TEAMS; i++)
+            {
+                NHLTeam currentTeam = AllTeams[i];
+                matchupList[i, 0] = currentTeam;
+                matchupList[i, 1] = NHLTeam.NextOpponent(currentTeam, AllTeams);
+            }
+        }
+
+
+        #endregion
+
+        #region Matchup Methods
+
+        /// <summary>
+        /// Returns a list of pairs of teams that play against each other today
+        /// </summary>
+        /// <returns></returns>
+        public List<NHLTeam[]> TodaysMatchups()
+        {
+            List<NHLTeam[]> matchupPairs = new List<NHLTeam[]>();
+            List<string> teamsAdded = new List<string>();
+            for (int i = 0; i < matchupList.GetLength(0); i++)
+            {
+                string matchupDate = matchupList[i, 0].NextGameDate;
+                string todaysDate = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString();
+                if (matchupDate == todaysDate && !teamsAdded.Contains(matchupList[i, 0].Name))
+                {
+                    NHLTeam[] pairing = new NHLTeam[2];
+                    pairing[0] = matchupList[i, 0];
+                    pairing[1] = matchupList[i, 1];
+                    teamsAdded.Add(matchupList[i, 0].Name);
+                    teamsAdded.Add(matchupList[i, 1].Name);
+                    matchupPairs.Add(pairing);
+                }
+            }
+            return matchupPairs;
+        }
+
+        #endregion
+
     }
 }

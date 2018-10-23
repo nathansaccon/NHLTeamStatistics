@@ -16,15 +16,26 @@ namespace NHLTeamsLib
     {
         #region Class Variables
 
-        string name;
-        string abbreviation;
-        List<Game> gamelog;
+        private string name;
+        private string abbreviation;
+        private List<Game> gamelog;
 
         const int GAMES_PER_SEASON = 82;
 
         public string Name { get => name; set => name = value; }
         public string Abbreviation { get => abbreviation; set => abbreviation = value; }
-        public List<Game> Gamelog { get => gamelog; set => gamelog = value; }
+
+        #endregion
+
+        #region Next Opponent Variables
+
+        private string nextOpponentName;
+        private string nextGameDate;
+        private Arena nextGameArena;
+
+        public string NextOpponentName { get => nextOpponentName; }
+        public string NextGameDate { get => nextGameDate; }
+        public Arena NextGameArena { get => nextGameArena; }
 
         #endregion
 
@@ -128,7 +139,7 @@ namespace NHLTeamsLib
         /// <param name="year"></param>
         private void PopulateGamelog(int year)
         {
-            Gamelog = TeamStatPageToGameList(year);
+            gamelog = TeamStatPageToGameList(year);
         }
 
         /// <summary>
@@ -184,6 +195,17 @@ namespace NHLTeamsLib
             string goalsFor = row[14].Split('<')[0];
             if (goalsFor == "")
             {
+                nextOpponentName = row[9].Split('<')[0];
+                nextGameDate = row[4].Split('<')[0];
+                arena = row[6].Split('<')[0];
+                if (arena == "@")
+                {
+                    nextGameArena = Arena.AWAY;
+                }
+                else
+                {
+                    nextGameArena = Arena.HOME;
+                }
                 return null;
             }
             string goalsAgainst = row[16].Split('<')[0];
@@ -266,7 +288,7 @@ namespace NHLTeamsLib
             List<float> corsiFor = new List<float>();
             List<float> wins = new List<float>();
 
-            foreach (Game game in Gamelog)
+            foreach (Game game in gamelog)
             {
                 goalsFor.Add(game.GoalsFor);
                 goalsAgainst.Add(game.GoalsAgainst);
@@ -320,7 +342,7 @@ namespace NHLTeamsLib
             List<float> corsiFor = new List<float>();
             List<float> wins = new List<float>();
 
-            foreach (Game game in Gamelog)
+            foreach (Game game in gamelog)
             {
                 if (game.Arena == arena)
                 {
@@ -400,16 +422,16 @@ namespace NHLTeamsLib
         {
             float totalGoals = 0;
 
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return GoalsForPerGame;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    totalGoals += Gamelog[startingIndex].GoalsFor;
+                    totalGoals += gamelog[startingIndex].GoalsFor;
                     startingIndex++;
                 }
             }
@@ -425,16 +447,16 @@ namespace NHLTeamsLib
         {
             float totalGoals = 0;
 
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return GoalsAgainstPerGame;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    totalGoals += Gamelog[startingIndex].GoalsAgainst;
+                    totalGoals += gamelog[startingIndex].GoalsAgainst;
                     startingIndex++;
                 }
             }
@@ -450,16 +472,16 @@ namespace NHLTeamsLib
         {
             float totalShots = 0;
 
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return ShotsForPerGame;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    totalShots += Gamelog[startingIndex].ShotsFor;
+                    totalShots += gamelog[startingIndex].ShotsFor;
                     startingIndex++;
                 }
             }
@@ -475,16 +497,16 @@ namespace NHLTeamsLib
         {
             float totalShots = 0;
 
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return ShotsAgainstPerGame;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    totalShots += Gamelog[startingIndex].ShotsAgainst;
+                    totalShots += gamelog[startingIndex].ShotsAgainst;
                     startingIndex++;
                 }
             }
@@ -500,16 +522,16 @@ namespace NHLTeamsLib
         {
             float totalWins = 0;
 
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return WinRate;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    if (Gamelog[startingIndex].TeamPoints == 2)
+                    if (gamelog[startingIndex].TeamPoints == 2)
                     {
                         totalWins++;
                     }
@@ -527,16 +549,16 @@ namespace NHLTeamsLib
         public float CorsiLastX(float lastXGames)
         {
             float totalCorsi = 0;
-            if (lastXGames >= Gamelog.Count)
+            if (lastXGames >= gamelog.Count)
             {
                 return CorsiFor;
             }
             else
             {
-                int startingIndex = Gamelog.Count - (int)lastXGames;
+                int startingIndex = gamelog.Count - (int)lastXGames;
                 for (int i = 0; i < lastXGames; i++)
                 {
-                    totalCorsi += Gamelog[startingIndex].CorsiForPercent;
+                    totalCorsi += gamelog[startingIndex].CorsiForPercent;
                     startingIndex++;
                 }
             }
@@ -560,7 +582,31 @@ namespace NHLTeamsLib
 
             return standardDeviation;
         }
-        
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Return the NHLTeam that thisTeam will play next
+        /// </summary>
+        /// <param name="thisTeam"></param>
+        /// <param name="otherTeams"></param>
+        /// <returns></returns>
+        public static NHLTeam NextOpponent(NHLTeam thisTeam, NHLTeam[] otherTeams)
+        {
+            NHLTeam opponent = null;
+            foreach(NHLTeam team in otherTeams)
+            {
+                if(team.Name == thisTeam.NextOpponentName)
+                {
+                    opponent = team;
+                    break;
+                }
+            }
+            return opponent;
+        }
+
         #endregion
     }
 }

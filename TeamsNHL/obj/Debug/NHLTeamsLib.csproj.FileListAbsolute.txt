@@ -3,3 +3,4 @@ C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\bin\Debug\Te
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\NHLTeamsLib.csproj.CoreCompileInputs.cache
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.dll
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.pdb
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\NHLTeamsLib.csprojAssemblyReference.cache
