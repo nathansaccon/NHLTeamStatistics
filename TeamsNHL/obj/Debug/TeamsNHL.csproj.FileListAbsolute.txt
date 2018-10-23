@@ -1,0 +1,6 @@
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\bin\Debug\TeamsNHL.dll
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\bin\Debug\TeamsNHL.pdb
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.csprojAssemblyReference.cache
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.csproj.CoreCompileInputs.cache
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.dll
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\TeamsNHL\obj\Debug\TeamsNHL.pdb

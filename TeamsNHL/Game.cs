@@ -5,7 +5,7 @@
  * 
  */
 
-namespace NHLTeamStats
+namespace NHLTeamsLib
 {
     public enum Arena{
         HOME,
