@@ -1,5 +1,10 @@
 ﻿using System;
 
+/* Nathan Saccon NHLTeamStats Project
+ *          Date Started: October 21, 2018: Created project from scratch
+ * 
+ */
+
 namespace NHLTeamStats
 {
     public enum Arena{
@@ -9,20 +14,31 @@ namespace NHLTeamStats
     [Serializable]
     public class Game
     {
-        public Arena arena;
-        public int goalsFor;
-        public int goalsAgainst;
+        private Arena arena;
+        private int goalsFor;
+        private int goalsAgainst;
 
-        public int teamPoints; //"2, 1, 0"
+        private int teamPoints; //"2, 1, 0"
 
-        public int shotsFor;
-        public int shotsAgainst;
+        private int shotsFor;
+        private int shotsAgainst;
 
-        public int PenaltyMinutes;
-        public int PowerplayGoals;
-        public int PowerplayOpportunities;
+        private int penaltyMinutes;
+        private int powerplayGoals;
+        private int powerplayOpportunities;
 
-        public float corsiForPercent;
+        private float corsiForPercent;
+
+        public Arena Arena { get => arena; set => arena = value; }
+        public int GoalsFor { get => goalsFor; set => goalsFor = value; }
+        public int GoalsAgainst { get => goalsAgainst; set => goalsAgainst = value; }
+        public int TeamPoints { get => teamPoints; set => teamPoints = value; }
+        public int ShotsFor { get => shotsFor; set => shotsFor = value; }
+        public int ShotsAgainst { get => shotsAgainst; set => shotsAgainst = value; }
+        public int PenaltyMinutes { get => penaltyMinutes; set => penaltyMinutes = value; }
+        public int PowerplayGoals { get => powerplayGoals; set => powerplayGoals = value; }
+        public int PowerplayOpportunities { get => powerplayOpportunities; set => powerplayOpportunities = value; }
+        public float CorsiForPercent { get => corsiForPercent; set => corsiForPercent = value; }
 
         public Game()
         {

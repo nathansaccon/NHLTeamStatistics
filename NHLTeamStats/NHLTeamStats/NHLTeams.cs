@@ -6,18 +6,28 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
+/* Nathan Saccon NHLTeamStats Project
+ *          Date Started: October 21, 2018: Created project from scratch
+ * 
+ */
+
 namespace NHLTeamStats
 {
     [Serializable]
     class NHLTeams
     {
         #region Global Variables
+
         private const int NUMBER_OF_TEAMS = 31;
         private const int GAMES_PER_SEASON = 82;
         private const string HOMEPAGE = "https://www.hockey-reference.com/";
+
         private string Homepage = DownloadString(HOMEPAGE);
         private string filePath = "NHLTeams.txt";
-        public NHLTeam[] AllTeams = new NHLTeam[NUMBER_OF_TEAMS];
+
+        private NHLTeam[] allTeams = new NHLTeam[NUMBER_OF_TEAMS];
+
+        public NHLTeam[] AllTeams { get => allTeams; set => allTeams = value; }
 
         #endregion
 
@@ -130,11 +140,11 @@ namespace NHLTeamStats
 
             if (arena == "@")
             {
-                thisGame.arena = Arena.AWAY;
+                thisGame.Arena = Arena.AWAY;
             }
             else
             {
-                thisGame.arena = Arena.HOME;
+                thisGame.Arena = Arena.HOME;
             }
             // Goals
             string goalsFor = row[14].Split('<')[0];
@@ -144,19 +154,19 @@ namespace NHLTeamStats
             }
             string goalsAgainst = row[16].Split('<')[0];
 
-            thisGame.goalsFor = Convert.ToInt32(goalsFor);
-            thisGame.goalsAgainst = Convert.ToInt32(goalsAgainst);
+            thisGame.GoalsFor = Convert.ToInt32(goalsFor);
+            thisGame.GoalsAgainst = Convert.ToInt32(goalsAgainst);
             // Points
             string overallResult = row[18].Split('<')[0];
             string context = row[20].Split('<')[0];
 
-            thisGame.teamPoints = ResultStringsToValue(overallResult, context);
+            thisGame.TeamPoints = ResultStringsToValue(overallResult, context);
             // Shots
             string shotsFor = row[24].Split('<')[0];
             string shotsAgainst = row[36].Split('<')[0];
 
-            thisGame.shotsFor = Convert.ToInt32(shotsFor);
-            thisGame.shotsAgainst = Convert.ToInt32(shotsAgainst);
+            thisGame.ShotsFor = Convert.ToInt32(shotsFor);
+            thisGame.ShotsAgainst = Convert.ToInt32(shotsAgainst);
             // Powerplay
             string PenaltyMinutes = row[26].Split('<')[0];
             string PPGoals = row[28].Split('<')[0];
@@ -168,7 +178,7 @@ namespace NHLTeamStats
             // Advanced
             string corsiFor = row[52].Split('<')[0];
 
-            thisGame.corsiForPercent = float.Parse(corsiFor);
+            thisGame.CorsiForPercent = float.Parse(corsiFor);
 
 
             return thisGame;
