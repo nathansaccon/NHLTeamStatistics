@@ -50,7 +50,7 @@ namespace NHLTeamStats
             {
                 totalGoals += game.GoalsFor;
             }
-            return (float)Math.Round((totalGoals / Gamelog.Count), 2);
+            return totalGoals / Gamelog.Count;
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace NHLTeamStats
                     startingIndex++;
                 }
             }
-            return (float)Math.Round((totalGoals / lastXGames), 2);
+            return totalGoals / lastXGames;
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalGoals / numOfGames), 2);
+            return totalGoals / numOfGames;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalGoals / numOfGames), 2);
+            return totalGoals / numOfGames;
         }
 
         #endregion
@@ -131,7 +131,7 @@ namespace NHLTeamStats
             {
                 totalGoals += game.GoalsAgainst;
             }
-            return (float)Math.Round((totalGoals / Gamelog.Count), 2);
+            return totalGoals / Gamelog.Count;
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace NHLTeamStats
                     startingIndex++;
                 }
             }
-            return (float)Math.Round((totalGoals / lastXGames), 2);
+            return totalGoals / lastXGames;
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalGoals / numOfGames), 2);
+            return totalGoals / numOfGames;
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalGoals / numOfGames), 2);
+            return totalGoals / numOfGames;
         }
 
         #endregion
@@ -212,7 +212,7 @@ namespace NHLTeamStats
             {
                 totalShots += game.ShotsFor;
             }
-            return (float)Math.Round((totalShots / Gamelog.Count), 2);
+            return totalShots / Gamelog.Count;
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace NHLTeamStats
                     startingIndex++;
                 }
             }
-            return (float)Math.Round((totalShots / lastXGames), 2);
+            return totalShots / lastXGames;
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalShots / numOfGames), 2);
+            return totalShots / numOfGames;
         }
         /// <summary>
         /// Returns the average number of shots for per away game this season.
@@ -274,7 +274,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalShots / numOfGames), 2);
+            return totalShots / numOfGames;
         }
 
         #endregion
@@ -292,7 +292,7 @@ namespace NHLTeamStats
             {
                 totalShots += game.ShotsAgainst;
             }
-            return (float)Math.Round((totalShots / Gamelog.Count), 2);
+            return totalShots / Gamelog.Count;
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace NHLTeamStats
                     startingIndex++;
                 }
             }
-            return (float)Math.Round((totalShots / lastXGames), 2);
+            return totalShots / lastXGames;
         }
 
         /// <summary>
@@ -336,7 +336,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalShots / numOfGames), 2);
+            return totalShots / numOfGames;
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace NHLTeamStats
                     numOfGames++;
                 }
             }
-            return (float)Math.Round((totalShots / numOfGames), 2);
+            return totalShots / numOfGames;
         }
 
         #endregion
@@ -373,7 +373,7 @@ namespace NHLTeamStats
             {
                 totalPIM += game.PenaltyMinutes;
             }
-            return (float)Math.Round((totalPIM / Gamelog.Count), 2);
+            return totalPIM / Gamelog.Count;
         }
 
         #endregion
@@ -394,7 +394,7 @@ namespace NHLTeamStats
                     gamesWon++;
                 }
             }
-            return (float)Math.Round((gamesWon / Gamelog.Count), 2);
+            return gamesWon / Gamelog.Count;
         }
 
         /// <summary>
@@ -422,7 +422,7 @@ namespace NHLTeamStats
                     startingIndex++;
                 }
             }
-            return (float)Math.Round((totalWins / lastXGames), 2);
+            return totalWins / lastXGames;
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace NHLTeamStats
                     }
                 }
             }
-            return (float)Math.Round((gamesWon / gamesPlayed), 2);
+            return gamesWon / gamesPlayed;
         }
 
         /// <summary>
@@ -466,14 +466,174 @@ namespace NHLTeamStats
                     }
                 }
             }
-            return (float)Math.Round((gamesWon / gamesPlayed), 2);
+            return gamesWon / gamesPlayed;
+        }
+
+        #endregion
+
+        #region Corsi For
+
+        /// <summary>
+        /// Returns the average corsi for percent for a team.
+        /// </summary>
+        /// <returns></returns>
+        public float CorsiPerGame()
+        {
+            float totalCorsi = 0;
+            foreach(Game game in Gamelog)
+            {
+                totalCorsi += game.CorsiForPercent;
+            }
+            return totalCorsi / Gamelog.Count;
+        }
+
+        /// <summary>
+        /// Returns the average Corsi for, for the last X number of games.
+        /// </summary>
+        /// <param name="lastXGames"></param>
+        /// <returns></returns>
+        public float CorsiPerGame(float lastXGames)
+        {
+            float totalCorsi = 0;
+            if (lastXGames >= Gamelog.Count)
+            {
+                return ShotsForPerGame();
+            }
+            else
+            {
+                int startingIndex = Gamelog.Count - (int)lastXGames;
+                for (int i = 0; i < lastXGames; i++)
+                {
+                    totalCorsi += Gamelog[startingIndex].CorsiForPercent;
+                    startingIndex++;
+                }
+            }
+            return totalCorsi / lastXGames;
+        }
+
+        /// <summary>
+        /// Returns the average home corsi for percent for a team.
+        /// </summary>
+        /// <returns></returns>
+        public float HomeCorsiPerGame()
+        {
+            float totalCorsi = 0;
+            float totalGames = 0;
+            foreach (Game game in Gamelog)
+            {
+                if (game.Arena == Arena.HOME)
+                {
+                    totalCorsi += game.CorsiForPercent;
+                    totalGames++;
+                }
+            }
+            return totalCorsi / totalGames;
+        }
+
+        /// <summary>
+        /// Returns the average away corsi for percent for a team.
+        /// </summary>
+        /// <returns></returns>
+        public float AwayCorsiPerGame()
+        {
+            float totalCorsi = 0;
+            float totalGames = 0;
+            foreach (Game game in Gamelog)
+            {
+                if (game.Arena == Arena.AWAY)
+                {
+                    totalCorsi += game.CorsiForPercent;
+                    totalGames++;
+                }
+            }
+            return totalCorsi / totalGames;
         }
 
         #endregion
 
         #endregion
 
+        #region Totals Stats
 
+        /// <summary>
+        /// Returns the total number of goals a team has scored.
+        /// </summary>
+        /// <returns></returns>
+        public int GoalsScored()
+        {
+            int numberOfGoals = 0;
+            foreach(Game game in Gamelog)
+            {
+                numberOfGoals += game.GoalsFor;
+            }
+            return numberOfGoals;
+        }
 
+        /// <summary>
+        /// Returns the total number of goals against a team has allowed.
+        /// </summary>
+        /// <returns></returns>
+        public int GoalsAllowed()
+        {
+            int totalGoalsAllowed = 0;
+            foreach(Game game in Gamelog)
+            {
+                totalGoalsAllowed += game.GoalsAgainst;
+            }
+            return totalGoalsAllowed;
+        }
+
+        /// <summary>
+        /// Returns the number of power play goals a team scored this season.
+        /// </summary>
+        /// <returns></returns>
+        public int PowerPlayGoals()
+        {
+            int totalPPGs = 0;
+            foreach(Game game in Gamelog)
+            {
+                totalPPGs += game.PowerplayGoals;
+            }
+            return totalPPGs;
+        }
+
+        /// <summary>
+        /// Returns a team's total number of power play opportunities.
+        /// </summary>
+        /// <returns></returns>
+        public int PowerPlayOpportunities()
+        {
+            int powerPlayOpportunities = 0;
+            foreach(Game game in Gamelog)
+            {
+                powerPlayOpportunities += game.PowerplayOpportunities;
+            }
+            return powerPlayOpportunities;
+        }
+
+        #endregion
+
+        #region Other Stats
+
+        /// <summary>
+        /// Returns percent of time a team scores even strength.
+        /// </summary>
+        /// <returns></returns>
+        public float EvenStrengthGoalPercent()
+        {
+            return 1 - (float)PowerPlayGoals() / (float)GoalsScored();
+        }
+
+        /// <summary>
+        /// Returns percentage of time a team scores on the powerplay.
+        /// </summary>
+        /// <returns></returns>
+        public float PowerPlayPercent()
+        {
+            return (float)PowerPlayGoals() / (float)PowerPlayOpportunities();
+        }
+
+        #endregion
+        
     }
 }

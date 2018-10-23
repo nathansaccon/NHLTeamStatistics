@@ -12,3 +12,10 @@ C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\NHLTeamS
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\NHLTeamStats\obj\Debug\NHLTeamStats.csproj.CoreCompileInputs.cache
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\NHLTeamStats\obj\Debug\NHLTeamStats.exe
 C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\NHLTeamStats\obj\Debug\NHLTeamStats.pdb
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\bin\Debug\NHLTeamStats.exe.config
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\bin\Debug\NHLTeamStats.exe
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\bin\Debug\NHLTeamStats.pdb
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\obj\Debug\NHLTeamStats.csprojAssemblyReference.cache
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\obj\Debug\NHLTeamStats.csproj.CoreCompileInputs.cache
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\obj\Debug\NHLTeamStats.exe
+C:\Users\natha\Documents\Coding Practice\NHLTeamStatistics\NHLTeamStats\obj\Debug\NHLTeamStats.pdb

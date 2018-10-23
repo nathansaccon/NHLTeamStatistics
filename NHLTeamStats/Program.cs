@@ -22,7 +22,7 @@ namespace NHLTeamStats
 
             foreach(NHLTeam team in league.AllTeams)
             {
-                Console.WriteLine(team.Name +" - "+ team.GoalsForPerGame(2));
+                Console.WriteLine(team.Name + " - " + team.PowerPlayOpportunities() + " - " + team.ShotsForPerGame());
             }
             Console.ReadKey();
         }
