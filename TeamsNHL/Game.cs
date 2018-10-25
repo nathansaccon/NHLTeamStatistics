@@ -14,7 +14,10 @@ namespace NHLTeamsLib
     [Serializable]
     public class Game
     {
+        private bool played;
         private Arena arena;
+        private string date;
+        private string opponent;
         private int goalsFor;
         private int goalsAgainst;
 
@@ -39,6 +42,9 @@ namespace NHLTeamsLib
         public int PowerplayGoals { get => powerplayGoals; set => powerplayGoals = value; }
         public int PowerplayOpportunities { get => powerplayOpportunities; set => powerplayOpportunities = value; }
         public float CorsiForPercent { get => corsiForPercent; set => corsiForPercent = value; }
+        public string Date { get => date; set => date = value; }
+        public string Opponent { get => opponent; set => opponent = value; }
+        public bool Played { get => played; set => played = value; }
 
         public Game()
         {

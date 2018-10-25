@@ -42,8 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
-    <Compile Include="NHLTeam.cs" />
-    <Compile Include="NHLTeams.cs" />
+    <Compile Include="Team.cs" />
+    <Compile Include="NHL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
