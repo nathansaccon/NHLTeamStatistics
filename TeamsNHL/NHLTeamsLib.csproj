@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="Player.cs" />
+    <Compile Include="Skater.cs" />
     <Compile Include="Team.cs" />
     <Compile Include="NHL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

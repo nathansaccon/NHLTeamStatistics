@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using TeamsNHL;
 
 /* Nathan Saccon TeamStats Project
  *          Date Started: October 21, 2018: Created project from scratch
@@ -18,17 +19,17 @@ namespace NHLTeamsLib
     {
         #region Global Variables
         
-        private const string FILE = "NHLTeams.txt";
-
+        internal const string TEAM_FILE = "NHLTeams.txt";
+        internal const string SKATER_FILE = "NHLSkaters.txt";
         internal const int NUMBER_OF_TEAMS = 31;
         internal const int GAMES_PER_SEASON = 82;
         internal const int YEAR = 2019; // eg 2019 gets stats for the 2018/2019 season.
-        internal const string HOMEPAGE = "https://www.hockey-reference.com/";
-        internal string Homepage = Team.DownloadString(HOMEPAGE);
 
         private Team[] allTeams = new Team[NUMBER_OF_TEAMS];
+        private List<Skater> allSkaters = new List<Skater>();
 
         public Team[] AllTeams { get => allTeams; }
+        public List<Skater> AllSkaters { get => allSkaters; }
 
         #endregion
 
@@ -37,41 +38,42 @@ namespace NHLTeamsLib
         /// <summary>
         /// Tries to load all teams from a file, uses the internet otherwise.
         /// </summary>
-        public NHL(bool load)
+        public NHL(bool loadTeams, bool loadSkaters)
         {
-            if (load)
+            if (loadTeams)
             {
                 try
                 {
-                    using (Stream stream = File.Open(FILE, FileMode.Open))
-                    {
-                        var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                        allTeams = (Team[])binaryFormatter.Deserialize(stream);
-                    }
+                    allTeams = Team.LoadTeams();
                 }
                 catch (Exception)
                 {
-                    WriteNewTeamsFile();
+                    Team.SaveTeams(Team.AllTeams());
+                    allTeams = Team.LoadTeams();
                 }
             }
             else
             {
-                WriteNewTeamsFile();
+                Team.SaveTeams(Team.AllTeams());
+                allTeams = Team.LoadTeams();
             }
 
-        }
-
-        /// <summary>
-        /// Updates AllTeams to the current NHL stats, and writes them to file
-        /// </summary>
-        private void WriteNewTeamsFile()
-        {
-            allTeams = Team.AllTeams();
-
-            using (Stream stream = File.Open(FILE, false ? FileMode.Append : FileMode.Create))
+            if (loadSkaters)
             {
-                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                binaryFormatter.Serialize(stream, AllTeams);
+                try
+                {
+                    allSkaters = Skater.LoadSkaters();
+                }
+                catch (Exception)
+                {
+                    Skater.SaveSkaters(Skater.AllSkaters());
+                    allSkaters = Skater.LoadSkaters();
+                }
+            }
+            else
+            {
+                Skater.SaveSkaters(Skater.AllSkaters());
+                allSkaters = Skater.LoadSkaters();
             }
         }
 

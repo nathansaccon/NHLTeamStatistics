@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -96,6 +97,7 @@ namespace NHLTeamsLib
         #endregion
 
         #region Download String
+
         /// <summary>
         /// Returns the html string of the given web address.
         /// </summary>
@@ -121,15 +123,6 @@ namespace NHLTeamsLib
         }
 
         #region Populate Gamelog (Pirvate Methods)
-
-        ///// <summary>
-        ///// Populates this team's gamelog based on the chosen year
-        ///// </summary>
-        ///// <param name="year"></param>
-        //private void PopulateGamelog(int year)
-        //{
-        //    gamelog = TeamStatPageToGameList(year);
-        //}
 
         /// <summary>
         /// Returns a list of all the games a team (by abbreviation) played in a year.
@@ -327,8 +320,8 @@ namespace NHLTeamsLib
             //Averages
             GoalsForPerGame = goalsFor.Average();
             GoalsAgainstPerGame = goalsAgainst.Average();
-            EvenStrengthGoalPercent = 1 - ppgs.Average();
-            PowerPlayPercent = ppgs.Average();
+            EvenStrengthGoalPercent = (goalsFor.Sum() - ppgs.Sum()) / goalsFor.Sum();
+            PowerPlayPercent = ppgs.Sum() / ppOpportunities.Sum();
             ShotsForPerGame = shotsFor.Average();
             ShotsAgainstPerGame = shotsAgainst.Average();
             PIMPerGame = penaltyMins.Average();
@@ -386,9 +379,8 @@ namespace NHLTeamsLib
                 // Averages
                 HomeGoalsForPerGame = goalsFor.Average();
                 HomeGoalsAgainstPerGame = goalsAgainst.Average();
-                HomeGoalsForStandardDeviation = StandardDeviationOf(goalsFor);
-                HomeEvenStrengthGoalPercent = 1 - ppgs.Average();
-                HomePowerPlayPercent = ppgs.Average();
+                HomeEvenStrengthGoalPercent = (goalsFor.Sum() - ppgs.Sum()) / goalsFor.Sum();
+                HomePowerPlayPercent = ppgs.Sum() / ppOpportunities.Sum();
                 HomeShotsForPerGame = shotsFor.Average();
                 HomeShotsAgainstPerGame = shotsAgainst.Average();
                 HomePIMPerGame = penaltyMins.Average();
@@ -681,6 +673,35 @@ namespace NHLTeamsLib
 
         #endregion
 
+        #region Save/Load
+
+        /// <summary>
+        /// Updates AllTeams to the current NHL stats, and writes them to file
+        /// </summary>
+        internal static void SaveTeams(Team[] teams)
+        {
+            Stream stream = File.Open(NHL.TEAM_FILE, false ? FileMode.Append : FileMode.Create);
+            var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+            binaryFormatter.Serialize(stream, teams);
+            stream.Close();
+        }
+
+        /// <summary>
+        /// Returns saved teams
+        /// </summary>
+        /// <returns></returns>
+        internal static Team[] LoadTeams()
+        {
+            Stream stream = File.Open(NHL.TEAM_FILE, FileMode.Open);
+            var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+            Team[] allTeams = (Team[])binaryFormatter.Deserialize(stream);
+            stream.Close();
+            return allTeams;
+            
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Returns the list of all NHL teams.
@@ -688,7 +709,8 @@ namespace NHLTeamsLib
         internal static Team[] AllTeams()
         {
             Team[] allTeams = new Team[NHL.NUMBER_OF_TEAMS];
-            string teamTableData = NHL.HOMEPAGE.Split(new string[] { "selector_0" }, StringSplitOptions.None)[1];
+            string homepage = DownloadString("https://www.hockey-reference.com/");
+            string teamTableData = homepage.Split(new string[] { "selector_0" }, StringSplitOptions.None)[1];
             int initialRow = 2;
             for (int i = initialRow; i < initialRow + allTeams.Length; i++)
             {
@@ -702,6 +724,46 @@ namespace NHLTeamsLib
             }
             return allTeams;
         }
+
+        #region Predictors
+
+        public static string GoalPredictions(Team home, Team away)
+        {
+            List<float> homeStats = new List<float>();
+            List<float> awayStats = new List<float>();
+            List<float> homePIMStats = new List<float>();
+            List<float> awayPIMStats = new List<float>();
+
+            float homeExpectedGoals = 0;
+            float awayExpectedGoals = 0;
+
+            homeStats.Add(home.GoalsForPerGame);
+            homeStats.Add(home.HomeGoalsForPerGame);
+            homeStats.Add(away.GoalsAgainstPerGame);
+            homeStats.Add(away.AwayGoalsAgainstPerGame);
+
+            awayPIMStats.Add(away.PIMPerGame);
+            awayPIMStats.Add(away.AwayPIMPerGame);
+
+            homeExpectedGoals += homeStats.Average() * home.EvenStrengthGoalPercent;
+            homeExpectedGoals += awayPIMStats.Average() / 2 * home.PowerPlayPercent;
+
+            awayStats.Add(away.GoalsForPerGame);
+            awayStats.Add(away.AwayGoalsForPerGame);
+            awayStats.Add(home.GoalsAgainstPerGame);
+            awayStats.Add(home.HomeGoalsAgainstPerGame);
+
+            homePIMStats.Add(home.PIMPerGame);
+            homePIMStats.Add(home.AwayPIMPerGame);
+
+            awayExpectedGoals += awayStats.Average() * away.EvenStrengthGoalPercent;
+            awayExpectedGoals += homePIMStats.Average() / 2 * away.PowerPlayPercent;
+
+            return home.Name + ": "+ homeExpectedGoals +"\n"+ away.Name +": "+awayExpectedGoals +"\n\n";
+
+        }
+
+        #endregion
 
         #region Outcome Predictors
 
