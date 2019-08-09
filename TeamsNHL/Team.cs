@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using TeamsNHL;
 
 /* Nathan Saccon NHLTeamStats Project
  *          Date Started: October 21, 2018: Created project from scratch
@@ -21,9 +22,11 @@ namespace NHLTeamsLib
         private string abbreviation;
         private List<Game> gamelog;
         private List<Game> futureGamelog;
+        internal List<Skater> skaters;
 
         public string Name { get => name;}
-        public string Abbreviation { get => abbreviation;}
+        public string Abbreviation { get => abbreviation; }
+        public List<Skater> Skaters { get => skaters; }
 
         #endregion
 
@@ -320,7 +323,7 @@ namespace NHLTeamsLib
             //Averages
             GoalsForPerGame = goalsFor.Average();
             GoalsAgainstPerGame = goalsAgainst.Average();
-            EvenStrengthGoalPercent = (goalsFor.Sum() - ppgs.Sum()) / goalsFor.Sum();
+            EvenStrengthGoalPercent = 1 - (ppgs.Sum() / goalsFor.Sum());
             PowerPlayPercent = ppgs.Sum() / ppOpportunities.Sum();
             ShotsForPerGame = shotsFor.Average();
             ShotsAgainstPerGame = shotsAgainst.Average();
@@ -379,7 +382,7 @@ namespace NHLTeamsLib
                 // Averages
                 HomeGoalsForPerGame = goalsFor.Average();
                 HomeGoalsAgainstPerGame = goalsAgainst.Average();
-                HomeEvenStrengthGoalPercent = (goalsFor.Sum() - ppgs.Sum()) / goalsFor.Sum();
+                HomeEvenStrengthGoalPercent = 1 - (ppgs.Sum() / goalsFor.Sum());
                 HomePowerPlayPercent = ppgs.Sum() / ppOpportunities.Sum();
                 HomeShotsForPerGame = shotsFor.Average();
                 HomeShotsAgainstPerGame = shotsAgainst.Average();
@@ -399,7 +402,7 @@ namespace NHLTeamsLib
                 AwayGoalsForPerGame = goalsFor.Average();
                 AwayGoalsAgainstPerGame = goalsAgainst.Average();
                 AwayGoalsForStandardDeviation = StandardDeviationOf(goalsFor);
-                AwayEvenStrengthGoalPercent = 1 - ppgs.Average();
+                AwayEvenStrengthGoalPercent = 1 - (ppgs.Sum() / goalsFor.Sum());
                 AwayPowerPlayPercent = ppgs.Average();
                 AwayShotsForPerGame = shotsFor.Average();
                 AwayShotsAgainstPerGame = shotsAgainst.Average();
@@ -702,6 +705,7 @@ namespace NHLTeamsLib
 
         #endregion
 
+        #region All Teams
 
         /// <summary>
         /// Returns the list of all NHL teams.
@@ -725,427 +729,197 @@ namespace NHLTeamsLib
             return allTeams;
         }
 
-        #region Predictors
-
-        public static string GoalPredictions(Team home, Team away)
-        {
-            List<float> homeStats = new List<float>();
-            List<float> awayStats = new List<float>();
-            List<float> homePIMStats = new List<float>();
-            List<float> awayPIMStats = new List<float>();
-
-            float homeExpectedGoals = 0;
-            float awayExpectedGoals = 0;
-
-            homeStats.Add(home.GoalsForPerGame);
-            homeStats.Add(home.HomeGoalsForPerGame);
-            homeStats.Add(away.GoalsAgainstPerGame);
-            homeStats.Add(away.AwayGoalsAgainstPerGame);
-
-            awayPIMStats.Add(away.PIMPerGame);
-            awayPIMStats.Add(away.AwayPIMPerGame);
-
-            homeExpectedGoals += homeStats.Average() * home.EvenStrengthGoalPercent;
-            homeExpectedGoals += awayPIMStats.Average() / 2 * home.PowerPlayPercent;
-
-            awayStats.Add(away.GoalsForPerGame);
-            awayStats.Add(away.AwayGoalsForPerGame);
-            awayStats.Add(home.GoalsAgainstPerGame);
-            awayStats.Add(home.HomeGoalsAgainstPerGame);
-
-            homePIMStats.Add(home.PIMPerGame);
-            homePIMStats.Add(home.AwayPIMPerGame);
-
-            awayExpectedGoals += awayStats.Average() * away.EvenStrengthGoalPercent;
-            awayExpectedGoals += homePIMStats.Average() / 2 * away.PowerPlayPercent;
-
-            return home.Name + ": "+ homeExpectedGoals +"\n"+ away.Name +": "+awayExpectedGoals +"\n\n";
-
-        }
-
         #endregion
 
-        #region Outcome Predictors
+        #region Write File Methods
 
-        public static string TeamCategoryCompare(Team homeTeam, Team awayTeam)
+        /// <summary>
+        /// Returns a string formatted to HTML with comparison stats between home and away teams
+        /// </summary>
+        /// <param name="homeTeam"></param>
+        /// <param name="awayTeam"></param>
+        /// <returns></returns>
+        internal static string WriteMatchupHTML(Team homeTeam, Team awayTeam)
         {
-            int homeTeamPoints = 0;
-            int awayTeamPoints = 0;
-            
-            //Goals for
-            if(homeTeam.HomeGoalsForPerGame > awayTeam.AwayGoalsForPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.GoalsForPerGame > awayTeam.GoalsForPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.GoalsForLastX(5) > awayTeam.GoalsForLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            // Goals against
-            if(homeTeam.HomeGoalsAgainstPerGame < awayTeam.AwayGoalsAgainstPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.GoalsAgainstPerGame < awayTeam.GoalsAgainstPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.GoalsAgainstLastX(5) < awayTeam.GoalsAgainstLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            // Shots for
-            if(homeTeam.HomeShotsForPerGame > awayTeam.AwayShotsForPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.ShotsForPerGame > awayTeam.ShotsForPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.ShotsForLastX(5) > awayTeam.ShotsForLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            // Shots against
-            if(homeTeam.HomeShotsAgainstPerGame < awayTeam.AwayShotsAgainstPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.ShotsAgainstPerGame < awayTeam.ShotsAgainstPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.ShotsAgainstLastX(5) < awayTeam.ShotsAgainstLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
+            string homeHTML = "";
+            string awayHTML = "";
+            int homeScore = 0;
+            int awayScore = 0;
+            int lastX = 5;
+            // Headers
+            string header = $"<br /><h4>{homeTeam.Name} vs. {awayTeam.Name}</h4>\n";
+            homeHTML += $"<div style=\"float:left;margin-right:4.5em;\"><br /><h3>{homeTeam.Name}</h3>\n<h2>Home Averages</h2>";
+            awayHTML += $"<div style=\"display:block\"><br /><h3>{awayTeam.Name}</h3>\n<h2>Away Averages</h2>";
+            // Arena Win Rate
+            string[] winRateArena = StatHTMLColoured("Win Rate", homeTeam.HomeWinRate, awayTeam.AwayWinRate, true);
+
+            homeHTML += winRateArena[0];
+            awayHTML += winRateArena[1];
+            homeScore += Convert.ToInt32(winRateArena[2]);
+            awayScore += Convert.ToInt32(winRateArena[3]);
+            // Goals For
+            string[] goalsForArena = StatHTMLColoured("Goals For", homeTeam.HomeGoalsForPerGame, awayTeam.AwayGoalsForPerGame, true);
+            homeHTML += goalsForArena[0];
+            awayHTML += goalsForArena[1];
+            homeScore += Convert.ToInt32(goalsForArena[2]);
+            awayScore += Convert.ToInt32(goalsForArena[3]);
+            // Goals Against
+            string[] goalsAgainstArena = StatHTMLColoured("Goals Against", homeTeam.HomeGoalsAgainstPerGame, awayTeam.AwayGoalsAgainstPerGame, false);
+            homeHTML += goalsAgainstArena[0];
+            awayHTML += goalsAgainstArena[1];
+            homeScore += Convert.ToInt32(goalsAgainstArena[2]);
+            awayScore += Convert.ToInt32(goalsAgainstArena[3]);
+            // Shots For
+            string[] shotsForArena = StatHTMLColoured("Shots For", homeTeam.HomeShotsForPerGame, awayTeam.AwayShotsForPerGame, true);
+            homeHTML += shotsForArena[0];
+            awayHTML += shotsForArena[1];
+            homeScore += Convert.ToInt32(shotsForArena[2]);
+            awayScore += Convert.ToInt32(shotsForArena[3]);
+            // Shots Against
+            string[] shotsAgainstArena = StatHTMLColoured("Shots Against", homeTeam.HomeShotsAgainstPerGame, awayTeam.AwayShotsAgainstPerGame, false);
+            homeHTML += shotsAgainstArena[0];
+            awayHTML += shotsAgainstArena[1];
+            homeScore += Convert.ToInt32(shotsAgainstArena[2]);
+            awayScore += Convert.ToInt32(shotsAgainstArena[3]);
             // PIM
-            if(homeTeam.HomePIMPerGame < awayTeam.AwayPIMPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.PIMPerGame < awayTeam.PIMPerGame)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.PIMLastX(5) < awayTeam.PIMLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            // Win Rate
-            if(homeTeam.HomeWinRate > awayTeam.AwayWinRate)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if (homeTeam.WinRate > awayTeam.WinRate)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.WinRateLastX(5) > awayTeam.WinRateLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
+            string[] PIMArena = StatHTMLColoured("Penalty Minutes", homeTeam.HomePIMPerGame, awayTeam.AwayPIMPerGame, false);
+            homeHTML += PIMArena[0];
+            awayHTML += PIMArena[1];
+            homeScore += Convert.ToInt32(PIMArena[2]);
+            awayScore += Convert.ToInt32(PIMArena[3]);
+            // Last 5 game averages
+            homeHTML += "<h2>Last 5 Games</h2>";
+            awayHTML += "<h2>Last 5 Games</h2>";
+            // Goals For
+            string[] goalsForX = StatHTMLColoured("Goals For", homeTeam.GoalsForLastX(lastX), awayTeam.GoalsForLastX(lastX), true);
+            homeHTML += goalsForX[0];
+            awayHTML += goalsForX[1];
+            homeScore += Convert.ToInt32(goalsForX[2]);
+            awayScore += Convert.ToInt32(goalsForX[3]);
+            // Goals Against
+            string[] goalsAgainstX = StatHTMLColoured("Goals Against", homeTeam.GoalsAgainstLastX(lastX), awayTeam.GoalsAgainstLastX(lastX), false);
+            homeHTML += goalsAgainstX[0];
+            awayHTML += goalsAgainstX[1];
+            homeScore += Convert.ToInt32(goalsAgainstX[2]);
+            awayScore += Convert.ToInt32(goalsAgainstX[3]);
+            // Shots For
+            string[] shotsForX = StatHTMLColoured("Shots For", homeTeam.ShotsForLastX(lastX), awayTeam.ShotsForLastX(lastX), true);
+            homeHTML += shotsForX[0];
+            awayHTML += shotsForX[1];
+            homeScore += Convert.ToInt32(shotsForX[2]);
+            awayScore += Convert.ToInt32(shotsForX[3]);
+            // Shots Against
+            string[] shotsAgainstX = StatHTMLColoured("Shots Against", homeTeam.ShotsAgainstLastX(lastX), awayTeam.ShotsAgainstLastX(lastX), false);
+            homeHTML += shotsAgainstX[0];
+            awayHTML += shotsAgainstX[1];
+            homeScore += Convert.ToInt32(shotsAgainstX[2]);
+            awayScore += Convert.ToInt32(shotsAgainstX[3]);
+            // PIM
+            string[] PIMX = StatHTMLColoured("Penalty Minutes", homeTeam.PIMLastX(lastX), awayTeam.PIMLastX(lastX), false);
+            homeHTML += PIMX[0];
+            awayHTML += PIMX[1];
+            homeScore += Convert.ToInt32(PIMX[2]);
+            awayScore += Convert.ToInt32(PIMX[3]);
+            // Advanced Stats
+            homeHTML += "<h2>Advanced Stats</h2>";
+            awayHTML += "<h2>Advanced Stats</h2>";
             // Corsi For
-            if(homeTeam.HomeCorsiFor > awayTeam.AwayCorsiFor)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.CorsiFor > awayTeam.CorsiFor)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if (homeTeam.CorsiLastX(5) > awayTeam.CorsiLastX(5))
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            // Even Strength Goals
-            if(homeTeam.HomeEvenStrengthGoalPercent > awayTeam.AwayEvenStrengthGoalPercent)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
-            if(homeTeam.EvenStrengthGoalPercent > awayTeam.EvenStrengthGoalPercent)
-            {
-                homeTeamPoints++;
-            }else
-            {
-                awayTeamPoints++;
-            }
+            string[] corsiForArena = StatHTMLColoured("Corsi For", homeTeam.HomeCorsiFor, awayTeam.AwayCorsiFor, true);
+            homeHTML += corsiForArena[0];
+            awayHTML += corsiForArena[1];
+            homeScore += Convert.ToInt32(corsiForArena[2]);
+            awayScore += Convert.ToInt32(corsiForArena[3]);
+            // Even Strength Goal Percentage
+            string[] evenGoals = StatHTMLColoured("Even Strength Goal %", homeTeam.HomeEvenStrengthGoalPercent*100, awayTeam.AwayEvenStrengthGoalPercent*100, true);
+            homeHTML += evenGoals[0];
+            awayHTML += evenGoals[1];
+            homeScore += Convert.ToInt32(evenGoals[2]);
+            awayScore += Convert.ToInt32(evenGoals[3]);
+            // Totals
+            string[] totals = StatHTMLColoured("Categories Won", homeScore, awayScore, true);
+            homeHTML += totals[0];
+            awayHTML += totals[1];
 
-            return homeTeam.Name + ": " + homeTeamPoints + "    |   " + awayTeam.Name + ": " + awayTeamPoints;
 
+            return header  + homeHTML + "</div>\n"+ awayHTML + "</div>\n";
         }
 
-        public static string TeamCategoryDifferenceCompare(Team homeTeam, Team awayTeam)
+        /// <summary>
+        /// Returns an array of string where index 0 is the home team HTML and index 1 is the away team HTML
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="homeStat"></param>
+        /// <param name="awayStat"></param>
+        /// <param name="isHighBetter"></param>
+        /// <returns></returns>
+        private static string[] StatHTMLColoured(string title, float homeStat, float awayStat, bool isHighBetter)
         {
-            float homeTeamPoints = 0;
-            float awayTeamPoints = 0;
+            string homeColour = "";
+            string awayColour = "";
+            int homeScore = 0;
+            int awayScore = 0;
+            string[] htmlStrings = new string[4];
+            if (isHighBetter)
+            {
+                if (homeStat > awayStat)
+                {
+                    homeColour = "green";
+                    awayColour = "red";
+                    homeScore++;
+                }
+                else if (homeStat == awayStat)
+                {
+                    homeColour = "blue";
+                    awayColour = "blue";
+                }
+                else
+                {
+                    homeColour = "red";
+                    awayColour = "green";
+                    awayScore++;
+                }
+            } else
+            {
+                if (homeStat < awayStat)
+                {
+                    homeColour = "green";
+                    awayColour = "red";
+                    homeScore++;
+                }
+                else if (homeStat == awayStat)
+                {
+                    homeColour = "blue";
+                    awayColour = "blue";
+                }
+                else
+                {
+                    homeColour = "red";
+                    awayColour = "green";
+                    awayScore++;
+                }
+            }
+            htmlStrings[0] = StatLine(title, homeColour, homeStat);
+            htmlStrings[1] = StatLine(title, awayColour, awayStat);
+            htmlStrings[2] = homeScore.ToString();
+            htmlStrings[3] = awayScore.ToString();
+            return htmlStrings;
+        }
 
-            //Goals for
-            if (homeTeam.HomeGoalsForPerGame > awayTeam.AwayGoalsForPerGame)
+        /// <summary>
+        /// Returns a string formatted to HTML
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="colour"></param>
+        /// <param name="stat"></param>
+        /// <returns></returns>
+        private static string StatLine(string title, string colour, float stat)
+        {
+            if (title == "Categories Won")
             {
-                homeTeamPoints += homeTeam.HomeGoalsForPerGame - awayTeam.AwayGoalsForPerGame;
-            }
-            else
-            {
-                awayTeamPoints += awayTeam.AwayGoalsForPerGame - homeTeam.HomeGoalsForPerGame;
-            }
-            if (homeTeam.GoalsForPerGame > awayTeam.GoalsForPerGame)
-            {
-                homeTeamPoints += homeTeam.GoalsForPerGame - awayTeam.GoalsForPerGame;
-            }
-            else
-            {
-                awayTeamPoints += awayTeam.GoalsForPerGame - homeTeam.GoalsForPerGame;
-            }
-            if (homeTeam.GoalsForLastX(5) > awayTeam.GoalsForLastX(5))
-            {
-                homeTeamPoints += homeTeam.GoalsForLastX(5) - awayTeam.GoalsForLastX(5);
-            }
-            else
-            {
-                awayTeamPoints += awayTeam.GoalsForLastX(5) - homeTeam.GoalsForLastX(5);
-            }
-            // Goals against
-            if (homeTeam.HomeGoalsAgainstPerGame < awayTeam.AwayGoalsAgainstPerGame)
-            {
-                homeTeamPoints += awayTeam.AwayGoalsAgainstPerGame - homeTeam.HomeGoalsAgainstPerGame;
-            }
-            else
-            {
-                awayTeamPoints += homeTeam.HomeGoalsAgainstPerGame - awayTeam.AwayGoalsAgainstPerGame;
-            }
-            if (homeTeam.GoalsAgainstPerGame < awayTeam.GoalsAgainstPerGame)
-            {
-                homeTeamPoints += awayTeam.GoalsAgainstPerGame - homeTeam.GoalsAgainstPerGame;
-            }
-            else
-            {
-                awayTeamPoints += homeTeam.GoalsAgainstPerGame - awayTeam.GoalsAgainstPerGame;
-            }
-            if (homeTeam.GoalsAgainstLastX(5) < awayTeam.GoalsAgainstLastX(5))
-            {
-                homeTeamPoints += awayTeam.GoalsAgainstLastX(5) - homeTeam.GoalsAgainstLastX(5);
-            }
-            else
-            {
-                awayTeamPoints += homeTeam.GoalsAgainstLastX(5) - awayTeam.GoalsAgainstLastX(5);
-            }
-            // Shots for
-            if (homeTeam.HomeShotsForPerGame > awayTeam.AwayShotsForPerGame)
-            {
-                homeTeamPoints += (homeTeam.HomeShotsForPerGame - awayTeam.AwayShotsForPerGame)*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.AwayShotsForPerGame - homeTeam.HomeShotsForPerGame)*0.2f;
-            }
-            if (homeTeam.ShotsForPerGame > awayTeam.ShotsForPerGame)
-            {
-                homeTeamPoints += (homeTeam.ShotsForPerGame - awayTeam.ShotsForPerGame)*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.ShotsForPerGame - homeTeam.ShotsForPerGame)*0.2f;
-            }
-            if (homeTeam.ShotsForLastX(5) > awayTeam.ShotsForLastX(5))
-            {
-                homeTeamPoints += (homeTeam.ShotsForLastX(5) - awayTeam.ShotsForLastX(5))*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.ShotsForLastX(5) - homeTeam.ShotsForLastX(5))*0.2f;
-            }
-            // Shots against
-            if (homeTeam.HomeShotsAgainstPerGame < awayTeam.AwayShotsAgainstPerGame)
-            {
-                homeTeamPoints += (awayTeam.AwayShotsAgainstPerGame - homeTeam.HomeShotsAgainstPerGame)*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.HomeShotsAgainstPerGame - awayTeam.AwayShotsAgainstPerGame)*0.2f;
-            }
-            if (homeTeam.ShotsAgainstPerGame < awayTeam.ShotsAgainstPerGame)
-            {
-                homeTeamPoints += (awayTeam.ShotsAgainstPerGame - homeTeam.ShotsAgainstPerGame)*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.ShotsAgainstPerGame - awayTeam.ShotsAgainstPerGame)*0.2f;
-            }
-            if (homeTeam.ShotsAgainstLastX(5) < awayTeam.ShotsAgainstLastX(5))
-            {
-                homeTeamPoints += (awayTeam.ShotsAgainstLastX(5) - homeTeam.ShotsAgainstLastX(5))*0.2f;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.ShotsAgainstLastX(5) - awayTeam.ShotsAgainstLastX(5))*0.2f;
-            }
-            // PIM
-            if (homeTeam.HomePIMPerGame < awayTeam.AwayPIMPerGame)
-            {
-                homeTeamPoints += (awayTeam.AwayPIMPerGame - homeTeam.HomePIMPerGame)*homeTeam.HomePowerPlayPercent;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.HomePIMPerGame - awayTeam.AwayPIMPerGame)*awayTeam.AwayPowerPlayPercent;
-            }
-            if (homeTeam.PIMPerGame < awayTeam.PIMPerGame)
-            {
-                homeTeamPoints += (awayTeam.PIMPerGame - homeTeam.PIMPerGame)*homeTeam.HomePowerPlayPercent;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.PIMPerGame - awayTeam.PIMPerGame)*awayTeam.AwayPowerPlayPercent;
-            }
-            if (homeTeam.PIMLastX(5) < awayTeam.PIMLastX(5))
-            {
-                homeTeamPoints += (awayTeam.PIMLastX(5) - homeTeam.PIMLastX(5))*homeTeam.HomePowerPlayPercent;
-            }
-            else
-            {
-                awayTeamPoints += (homeTeam.PIMLastX(5) - awayTeam.PIMLastX(5))*awayTeam.AwayPowerPlayPercent;
-            }
-            // Win Rate
-            if (homeTeam.HomeWinRate > awayTeam.AwayWinRate)
-            {
-                homeTeamPoints += (homeTeam.HomeWinRate - awayTeam.AwayWinRate)*5f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.AwayWinRate - homeTeam.HomeWinRate)*5f;
-            }
-            if (homeTeam.WinRate > awayTeam.WinRate)
-            {
-                homeTeamPoints += (homeTeam.WinRate - awayTeam.WinRate)*5f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.WinRate - homeTeam.WinRate)*5f;
-            }
-            if (homeTeam.WinRateLastX(5) > awayTeam.WinRateLastX(5))
-            {
-                homeTeamPoints += (homeTeam.WinRateLastX(5) - awayTeam.WinRateLastX(5))*5f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.WinRateLastX(5) - homeTeam.WinRateLastX(5))*5f;
-            }
-            // Corsi For
-            if (homeTeam.HomeCorsiFor > awayTeam.AwayCorsiFor)
-            {
-                homeTeamPoints += (homeTeam.HomeCorsiFor - awayTeam.AwayCorsiFor)*0.1f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.AwayCorsiFor - homeTeam.HomeCorsiFor)*0.1f;
-            }
-            if (homeTeam.CorsiFor > awayTeam.CorsiFor)
-            {
-                homeTeamPoints += (homeTeam.CorsiFor - awayTeam.CorsiFor)*0.1f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.CorsiFor - homeTeam.CorsiFor)*0.1f;
-            }
-            if (homeTeam.CorsiLastX(5) > awayTeam.CorsiLastX(5))
-            {
-                homeTeamPoints += (homeTeam.CorsiLastX(5) - awayTeam.CorsiLastX(5))*0.1f;
-            }
-            else
-            {
-                awayTeamPoints += (awayTeam.CorsiLastX(5) - homeTeam.CorsiLastX(5))*0.1f;
-            }
-            // Even Strength Goals
-            if (homeTeam.HomeEvenStrengthGoalPercent > awayTeam.AwayEvenStrengthGoalPercent)
-            {
-                homeTeamPoints += homeTeam.HomeEvenStrengthGoalPercent - awayTeam.AwayEvenStrengthGoalPercent;
-            }
-            else
-            {
-                awayTeamPoints += awayTeam.AwayEvenStrengthGoalPercent - homeTeam.HomeEvenStrengthGoalPercent;
-            }
-            if (homeTeam.EvenStrengthGoalPercent > awayTeam.EvenStrengthGoalPercent)
-            {
-                homeTeamPoints += homeTeam.EvenStrengthGoalPercent - awayTeam.EvenStrengthGoalPercent;
-            }
-            else
-            {
-                awayTeamPoints += awayTeam.EvenStrengthGoalPercent - homeTeam.EvenStrengthGoalPercent;
+                return $"<br /><b>{title}: <b style=\"color:{colour};font-size:1.2em;\">{Math.Round(stat, 2).ToString()}</b></b>\n";
             }
 
-            return homeTeam.Name + ": " + Math.Round(homeTeamPoints,2) + "    |   " + awayTeam.Name + ": " + Math.Round(awayTeamPoints,2);
-
+            return $"<p>{title}: <b style=\"color:{colour};font-size:1.2em;\">{Math.Round(stat, 2).ToString()}</b></p>\n";
         }
 
         #endregion

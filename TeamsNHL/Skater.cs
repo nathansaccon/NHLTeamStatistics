@@ -3,14 +3,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TeamsNHL
 {
     [Serializable]
     public class Skater : Player
     {
+        #region Class Variables
+
+        // DraftKings
+        internal string draftKingsName;
+        internal string draftKingsPosition;
+        internal int draftKingsCost;
+        // FanDuel
+        internal string fanDuelName;
+        internal string fanDuelPosition;
+        internal int fanDuelCost;
+
+        internal float startTime;
+        internal bool isInjured = false;
+
+        #endregion
+
         #region Constructor
 
         public Skater(string url)
@@ -66,6 +80,7 @@ namespace TeamsNHL
         {
             PopulateNameAndGamelog();
             PopulateSkaterStats();
+            PopulateFantasyData();
         }
 
         #region Populate Name and Gamelog
@@ -290,6 +305,130 @@ namespace TeamsNHL
 
         #endregion
 
+        #region Populate Fantasy Stats
+
+        /// <summary>
+        /// Populates Skater with their fantasy data
+        /// </summary>
+        private void PopulateFantasyData()
+        {
+            DraftKingsDataPopulate();
+            FanDuelDataPopulate();
+        }
+
+        /// <summary>
+        /// Populates player with their DraftKings fantasy data
+        /// </summary>
+        private void DraftKingsDataPopulate()
+        {
+            StreamReader reader = new StreamReader(NHL.DRAFTKINGS_FILE);
+            reader.ReadLine();
+            bool nameFound = false;
+            while (!reader.EndOfStream)
+            {
+                string[] line = reader.ReadLine().Split(',');
+                string dkPosition = line[0];
+                string dkName = line[2];
+                string dkCost = line[5];
+                float startTime = LineToTimeDecimal(line[6]);
+                
+                if (NameCorrection(dkName) == Name)
+                {
+                    draftKingsName = dkName;
+                    draftKingsPosition = dkPosition;
+                    draftKingsCost = Convert.ToInt32(dkCost);
+                    this.startTime = startTime;
+                    nameFound = true;
+                    break;
+                }
+            }
+            if (NHL.TEST && !nameFound && gamelog.Count > 1)
+            {
+                Console.WriteLine(Name + ": " + TeamAbbreviation);
+            }
+        }
+
+        /// <summary>
+        /// Populates player with their DraftKings fantasy data
+        /// </summary>
+        private void FanDuelDataPopulate()
+        {
+            StreamReader reader = new StreamReader(NHL.FANDUEL_FILE);
+            reader.ReadLine();
+            bool nameFound = false;
+            while (!reader.EndOfStream)
+            {
+                string[] line = reader.ReadLine().Split(',');
+                string fdName = RemoveStringSymbols(line[3]);
+
+                if (NameCorrection(fdName) == Name)
+                {
+                    string fdCost = RemoveStringSymbols(line[7]);
+                    string fdPosition = RemoveStringSymbols(line[1]);
+
+                    fanDuelName = fdName;
+                    fanDuelPosition = fdPosition;
+                    fanDuelCost = Convert.ToInt32(fdCost);
+                    isInjured = line[11] == "\"\"";
+                    nameFound = true;
+                    break;
+                }
+            }
+            if (NHL.TEST && !nameFound && gamelog.Count > 1)
+            {
+                Console.WriteLine(Name + ": " + TeamAbbreviation);
+            }
+        }
+
+        /// <summary>
+        /// Removes string ""'s from a string
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        private string RemoveStringSymbols(string sample)
+        {
+            return sample.Split('"')[1];
+        }
+
+        /// <summary>
+        /// Returns the time as a decimal so 7:30 is 7.5
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private float LineToTimeDecimal(string line)
+        {
+            float answer = 0;
+            string time = line.Split(' ')[2];
+            answer += Convert.ToInt32(time.Split(':')[0]);
+
+            string minute = time.Split(':')[1];
+            if (minute[0].ToString() == "3")
+            {
+                answer += 0.5f;
+            }
+
+            return answer;
+
+        }
+
+        /// <summary>
+        /// Returns the hockey reference name of a player
+        /// </summary>
+        /// <param name="dkName"></param>
+        /// <returns></returns>
+        private string NameCorrection(string dkName)
+        {
+            string correctedName = dkName;
+            if (dkName == "Jonathan Marchessault") { correctedName = "Jon Marchessault"; }
+            else if (dkName == "Matt Dumba") { correctedName = "Mathew Dumba"; }
+            else if (dkName == "Jake DeBrusk") { correctedName = "Jake Debrusk"; }
+            else if (dkName == "Tony DeAngelo") { correctedName = "Anthony DeAngelo"; }
+            else if (dkName == "Jacob De La Rose") { correctedName = "Jacob de La Rose"; }
+            else if (dkName == "Jon Merrill") { correctedName = "Jonathon Merrill"; }
+            return correctedName;
+        }
+        #endregion
+
         #endregion
 
         #region Math Methods
@@ -366,10 +505,191 @@ namespace TeamsNHL
             }
             return allSkaters;
         }
-
-
+        
 
         #endregion
 
+        #region Fantasy Hockey Methods
+
+        /// <summary>
+        /// Returns the draftkings player as HTML
+        /// </summary>
+        /// <returns></returns>
+        internal string ToDraftKingsHTML()
+        {
+            string skaterAsHTML = "";
+
+            skaterAsHTML += $"<h4>{Name}</h4>\n";
+            skaterAsHTML += $"<h2>{TeamAbbreviation}</h2>";
+            skaterAsHTML += $"<p>DraftKings Position: {draftKingsPosition}<br />\nDK Cost: {draftKingsCost}</p>";
+            skaterAsHTML += StatToHTML("Points Per Game", Assists + Goals);
+            skaterAsHTML += StatToHTML("Shots Per Game", Shots);
+            skaterAsHTML += StatToHTML("TOI Per Game", TimeOnIce);
+            skaterAsHTML += StatToHTML("Hits Per Game", Hits);
+            skaterAsHTML += StatToHTML("Blocks Per Game", Blocks);
+            skaterAsHTML += StatToHTML("Value", DraftKingsValue());
+
+            return skaterAsHTML;
+        }
+
+        /// <summary>
+        /// Returns the draftkings player as HTML
+        /// </summary>
+        /// <returns></returns>
+        internal string ToFanDuelHTML()
+        {
+            string skaterAsHTML = "";
+
+            skaterAsHTML += $"<h4>{Name}</h4>\n";
+            skaterAsHTML += $"<h2>{TeamAbbreviation}</h2>";
+            skaterAsHTML += $"<p>FanDuel Position: {fanDuelPosition}<br />\nFD Cost: {fanDuelCost}</p>";
+            skaterAsHTML += StatToHTML("Points Per Game", Assists + Goals);
+            skaterAsHTML += StatToHTML("Shots Per Game", Shots);
+            skaterAsHTML += StatToHTML("TOI Per Game", TimeOnIce);
+            skaterAsHTML += StatToHTML("Hits Per Game", Hits);
+            skaterAsHTML += StatToHTML("Blocks Per Game", Blocks);
+            skaterAsHTML += StatToHTML("Value", FanDuelValue());
+
+            return skaterAsHTML;
+        }
+
+        /// <summary>
+        /// Returns a stat as an HTML formatted string.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="stat"></param>
+        /// <returns></returns>
+        private static string StatToHTML(string title, float stat)
+        {
+            return $"<p>{title}: <b style=\"font-size:1.2em;\">{Math.Round(stat, 2).ToString()}</b></p>\n";
+        }
+
+        /// <summary>
+        /// Returns the value of this player
+        /// </summary>
+        /// <returns></returns>
+        internal float DraftKingsValue()
+        {
+            float value = 0;
+            if (draftKingsCost != 0)
+            {
+                value =  10000 * DraftKingsAverage() / draftKingsCost;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the value of this player
+        /// </summary>
+        /// <returns></returns>
+        internal float DraftKingsValue(Arena arena)
+        {
+            float value = 0;
+            if (draftKingsCost != 0)
+            {
+                value = 10000 * DraftKingsAverage(arena) / draftKingsCost;
+            }
+            return value;
+            
+        }
+
+        /// <summary>
+        /// Returns the value of this player
+        /// </summary>
+        /// <returns></returns>
+        internal float FanDuelValue()
+        {
+            float value = 0;
+            if (fanDuelCost != 0)
+            {
+                value = 10000 * FanDuelAverage() / fanDuelCost;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the value of this player
+        /// </summary>
+        /// <returns></returns>
+        internal float FanDuelValue(Arena arena)
+        {
+            float value = 0;
+            if (fanDuelCost != 0)
+            {
+                value = 10000 * FanDuelAverage(arena) / fanDuelCost;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the average points this player earns on DraftKings
+        /// </summary>
+        /// <returns></returns>
+        private float DraftKingsAverage()
+        {
+            const float GOAL = 3;
+            const float ASSIST = 2;
+            const float SHOT = 0.5f;
+            const float BLOCK = 0.5f;
+
+            return Goals * GOAL + Assists * ASSIST + Shots * SHOT + Blocks + BLOCK;
+        }
+
+        /// <summary>
+        /// Returns the average points this player earns on DraftKings at home/away
+        /// </summary>
+        /// <returns></returns>
+        private float DraftKingsAverage(Arena arena)
+        {
+            const float GOAL = 3;
+            const float ASSIST = 2;
+            const float SHOT = 0.5f;
+            const float BLOCK = 0.5f;
+
+            if (arena == Arena.HOME)
+            {
+                return HomeGoals * GOAL + HomeAssists * ASSIST + HomeShots * SHOT + HomeBlocks * BLOCK;
+            } else
+            {
+                return AwayGoals * GOAL + AwayAssists * ASSIST + AwayShots * SHOT + AwayBlocks * BLOCK;
+            }
+        }
+
+        /// <summary>
+        /// Returns the average points this player earns on DraftKings
+        /// </summary>
+        /// <returns></returns>
+        private float FanDuelAverage()
+        {
+            const float GOAL = 12;
+            const float ASSIST = 8;
+            const float SHOT = 1.6f;
+            const float BLOCK = 1.6f;
+
+            return Goals * GOAL + Assists * ASSIST + Shots * SHOT + Blocks + BLOCK;
+        }
+
+        /// <summary>
+        /// Returns the average points this player earns on DraftKings at home/away
+        /// </summary>
+        /// <returns></returns>
+        private float FanDuelAverage(Arena arena)
+        {
+            const float GOAL = 12;
+            const float ASSIST = 8;
+            const float SHOT = 1.6f;
+            const float BLOCK = 1.6f;
+
+            if (arena == Arena.HOME)
+            {
+                return HomeGoals * GOAL + HomeAssists * ASSIST + HomeShots * SHOT + HomeBlocks * BLOCK;
+            }
+            else
+            {
+                return AwayGoals * GOAL + AwayAssists * ASSIST + AwayShots * SHOT + AwayBlocks * BLOCK;
+            }
+        }
+
+        #endregion
     }
 }

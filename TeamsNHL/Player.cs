@@ -18,7 +18,7 @@ namespace TeamsNHL
 
         public string Name { get => name; }
         public string Url { get => url; set => url = value; }
-        public string TeamName { get => teamAbbreviation; }
+        public string TeamAbbreviation { get => teamAbbreviation; }
         public string Position { get => position; }
     }
 }
